@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { getProductById, Product } from "@/services/products";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -21,16 +21,16 @@ export default function ProductDetailsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    async function fetchProduct() {
       try {
         const data = await getProductById(productId);
         setProduct(data);
       } catch (err) {
-        console.error("Error fetching product details:", err);
+        console.error("Details error:", err);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     if (productId) fetchProduct();
   }, [productId]);
@@ -52,17 +52,20 @@ export default function ProductDetailsPage() {
     );
 
   const imageUrl =
-    product.imageCover ??
-    product.images?.[0] ??
-    "https://via.placeholder.com/300x300?text=No+Image";
+    product.imageCover ||
+    (product.images && product.images.length > 0
+      ? product.images[0]
+      : "https://via.placeholder.com/300x300?text=No+Image");
 
   const handleAddToCart = () => {
-    if (!user) return router.push(`/auth/login?redirect=/products/${productId}`);
+    if (!user)
+      return router.push(`/auth/login?redirect=/products/${productId}`);
     cart.addItem(productId);
   };
 
   const handleAddToWishlist = () => {
-    if (!user) return router.push(`/auth/login?redirect=/products/${productId}`);
+    if (!user)
+      return router.push(`/auth/login?redirect=/products/${productId}`);
     wishlist.addItem(productId);
   };
 
@@ -84,8 +87,12 @@ export default function ProductDetailsPage() {
           <h1 className="text-4xl font-bold text-gray-900">{product.title}</h1>
 
           <div className="flex items-center gap-4">
-            <span className="text-3xl font-bold text-indigo-600">${product.price}</span>
-            <span className="text-sm text-gray-500">⭐ {product.ratingsAverage ?? 0} / 5</span>
+            <span className="text-3xl font-bold text-indigo-600">
+              ${product.price}
+            </span>
+            <span className="text-sm text-gray-500">
+              ⭐ {product.ratingsAverage || 0} / 5
+            </span>
           </div>
 
           <p className="text-gray-600 leading-relaxed">{product.description}</p>
@@ -97,6 +104,7 @@ export default function ProductDetailsPage() {
             >
               Add to Cart
             </button>
+
             <button
               onClick={handleAddToWishlist}
               className="flex-1 border border-gray-300 py-3 rounded-2xl font-semibold hover:bg-gray-100 transition"

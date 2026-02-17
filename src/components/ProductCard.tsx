@@ -21,10 +21,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [addedWishlist, setAddedWishlist] = useState(false);
 
   const imageUrl =
-    product.image
-      ? product.image.startsWith("http")
-        ? product.image
-        : `https://ecommerce.routemisr.com${product.image}`
+    product.imageCover
+      ? product.imageCover.startsWith("http")
+        ? product.imageCover
+        : `https://ecommerce.routemisr.com${product.imageCover}`
       : product.images && product.images.length > 0
       ? product.images[0].startsWith("http")
         ? product.images[0]
@@ -32,21 +32,20 @@ export default function ProductCard({ product }: ProductCardProps) {
       : "https://via.placeholder.com/300x300?text=No+Image";
 
   const handleAddToCart = async () => {
-    if (!user) return router.push(`/auth/login?redirect=/products/${product._id}`);
-    await addToCart(product._id);
+    if (!user) return router.push(`/auth/login?redirect=/products/${product.id}`);
+    await addToCart(product.id);
     setAddedCart(true);
   };
 
   const handleAddToWishlist = async () => {
-    if (!user) return router.push(`/auth/login?redirect=/products/${product._id}`);
-    await addToWishlist(product._id);
+    if (!user) return router.push(`/auth/login?redirect=/products/${product.id}`);
+    await addToWishlist(product.id);
     setAddedWishlist(true);
   };
 
   return (
     <div className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
-      
-      <a href={`/products/${product._id}`} className="block">
+      <a href={`/products/${product.id}`} className="block">
         <div className="overflow-hidden">
           <img
             src={imageUrl}
@@ -54,18 +53,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
-
         <div className="p-4 space-y-2">
           <h3 className="font-semibold text-gray-800 line-clamp-2 min-h-[48px]">
             {product.title}
           </h3>
-
           <p className="text-xl font-bold text-green-700">
             ${product.price}
           </p>
         </div>
       </a>
-
       <div className="px-4 pb-4 mt-auto flex gap-3">
         <button
           onClick={handleAddToCart}
@@ -78,7 +74,6 @@ export default function ProductCard({ product }: ProductCardProps) {
         >
           {addedCart ? "Added 🛒" : "Add to Cart"}
         </button>
-
         <button
           onClick={handleAddToWishlist}
           disabled={addedWishlist}

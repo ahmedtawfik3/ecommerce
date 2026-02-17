@@ -14,7 +14,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = "shopmart_users";
 const STORAGE_CURRENT = "shopmart_current_user";
@@ -53,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_CURRENT);
   };
 
-  
   return (
     <AuthContext.Provider value={{ user, login, logout, signup }}>
       {children}

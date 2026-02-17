@@ -1,47 +1,86 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getAllProducts, Product } from "@/services/products";
-import ProductCard from "@/components/ProductCard";
+import React, { useState } from "react";
+import { Product } from "@/services/products";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ProductCardProps {
+  product: Product;
+}
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const data = await getAllProducts();
-        setProducts(data);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []);
+export default function ProductCard({ product }: ProductCardProps) {
+  const { addItem: addToCart } = useCart();
+  const { addItem: addToWishlist } = useWishlist();
+  const { user } = useAuth();
+  const router = useRouter();
 
-  if (loading)
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-lg text-gray-500 animate-pulse">Loading products...</p>
-      </div>
-    );
+  const [addedCart, setAddedCart] = useState(false);
+  const [addedWishlist, setAddedWishlist] = useState(false);
 
-  if (products.length === 0)
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="text-red-600 font-semibold">No products found</p>
-      </div>
-    );
+  const imageUrl =
+    product.imageCover
+      ? product.imageCover.startsWith("http")
+        ? product.imageCover
+        : `https://ecommerce.routemisr.com${product.imageCover}`
+      : product.images && product.images.length > 0
+      ? product.images[0].startsWith("http")
+        ? product.images[0]
+        : `https://ecommerce.routemisr.com${product.images[0]}`
+      : "https://via.placeholder.com/300x300?text=No+Image";
+
+  const handleAddToCart = async () => {
+    if (!user) return router.push(`/auth/login?redirect=/products/${product.id}`);
+    await addToCart(product.id);
+    setAddedCart(true);
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!user) return router.push(`/auth/login?redirect=/products/${product.id}`);
+    await addToWishlist(product.id);
+    setAddedWishlist(true);
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+    <div className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+      <a href={`/products/${product.id}`} className="block">
+        <div className="overflow-hidden">
+          <img
+            src={imageUrl}
+            alt={product.title}
+            className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+        <div className="p-4 space-y-2">
+          <h3 className="font-semibold text-gray-800 line-clamp-2 min-h-[48px]">{product.title}</h3>
+          <p className="text-xl font-bold text-green-700">${product.price}</p>
+        </div>
+      </a>
+      <div className="px-4 pb-4 mt-auto flex gap-3">
+        <button
+          onClick={handleAddToCart}
+          disabled={addedCart}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+            addedCart
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95"
+          }`}
+        >
+          {addedCart ? "Added 🛒" : "Add to Cart"}
+        </button>
+        <button
+          onClick={handleAddToWishlist}
+          disabled={addedWishlist}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+            addedWishlist
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-pink-500 text-white hover:bg-pink-600 active:scale-95"
+          }`}
+        >
+          {addedWishlist ? "Added 💖" : "Wishlist"}
+        </button>
       </div>
     </div>
   );

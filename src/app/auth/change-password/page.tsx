@@ -1,16 +1,28 @@
 "use client";
 import { useState } from "react";
 import { resetPassword } from "../../../services/auth";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ChangePasswordPage() {
-  const [currentPassword, setCurrentPassword] = useState("");
+  const { user } = useAuth(); 
   const [newPassword, setNewPassword] = useState("");
   const [rePassword, setRePassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    if (!user) {
+      alert("You must be logged in");
+      return;
+    }
+
+    if (newPassword !== rePassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
     try {
-      await resetPassword({ currentPassword, password: newPassword, rePassword });
+      await resetPassword(user.email, newPassword); 
       alert("Password changed successfully");
     } catch (err) {
       console.log(err);

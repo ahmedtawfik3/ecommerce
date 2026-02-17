@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import ProductCard from "@/components/ProductCard";
+import { useEffect, useState } from "react";
 import { getAllProducts, Product } from "@/services/products";
+import ProductCard from "@/components/ProductCard";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -10,28 +10,39 @@ export default function ProductsPage() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const res = await getAllProducts();
-      console.log("Fetched products array:", res);
-      setProducts(res);
-      setLoading(false);
+      try {
+        const data = await getAllProducts();
+        setProducts(data);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchProducts();
   }, []);
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading)
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-lg text-gray-500 animate-pulse">Loading products...</p>
+      </div>
+    );
+
+  if (products.length === 0)
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-red-600 font-semibold">No products found</p>
+      </div>
+    );
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
-      {products.length === 0 ? (
-        <p>No products found.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
-      )}
+    <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
     </div>
   );
 }

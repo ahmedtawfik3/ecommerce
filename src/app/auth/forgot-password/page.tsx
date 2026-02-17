@@ -9,7 +9,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      await forgotPassword({ email });
+      await forgotPassword(email);
       setMessage("Check your email for reset code!");
     } catch (err) {
       console.log(err);
